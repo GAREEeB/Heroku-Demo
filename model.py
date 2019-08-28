@@ -1,39 +1,38 @@
-# Importing the libraries
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import pickle
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
-dataset = pd.read_csv('hiring.csv')
+d = pd.read_csv('health.csv')
 
-dataset['experience'].fillna(0, inplace=True)
+dd=d.drop(columns=['date','bool_of_active','weight_kg'])
 
-dataset['test_score'].fillna(dataset['test_score'].mean(), inplace=True)
+active=pd.DataFrame()
+ac=np.array(d['bool_of_active'])
+mo=np.array(d['mood'])
+active['active']=ac
+active['mood']=mo
 
-X = dataset.iloc[:, :3]
 
-#Converting words to integer values
-def convert_to_int(word):
-    word_dict = {'one':1, 'two':2, 'three':3, 'four':4, 'five':5, 'six':6, 'seven':7, 'eight':8,
-                'nine':9, 'ten':10, 'eleven':11, 'twelve':12, 'zero':0, 0: 0}
-    return word_dict[word]
+df=dd.assign(mood=dd['mood']/100)
 
-X['experience'] = X['experience'].apply(lambda x : convert_to_int(x))
+y=df['mood']
+x=df.drop(columns=['mood'])
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2)
 
-y = dataset.iloc[:, -1]
 
-#Splitting Training and Test Set
-#Since we have a very small dataset, we will train our model with all availabe data.
+from sklearn.naive_bayes import GaussianNB
 
-from sklearn.linear_model import LinearRegression
-regressor = LinearRegression()
+nb=GaussianNB()
 
-#Fitting model with trainig data
-regressor.fit(X, y)
+nb.fit(x_train,y_train)
+y_pre=nb.predict(x_test)
 
-# Saving model to disk
-pickle.dump(regressor, open('model.pkl','wb'))
 
-# Loading model to compare the results
+pickle.dump(nb, open('model.pkl','wb'))
 model = pickle.load(open('model.pkl','rb'))
+
+
 print(model.predict([[2, 9, 6]]))
