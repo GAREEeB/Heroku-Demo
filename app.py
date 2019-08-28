@@ -7,7 +7,7 @@ model = pickle.load(open('model.pkl', 'rb'))
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('l.html')
 
 @app.route('/predict',methods=['POST'])
 def predict():
@@ -20,8 +20,18 @@ def predict():
 
     output = round(prediction[0], 2)
 
-    return render_template('index.html', prediction_text='Employee Salary should be $ {}'.format(output))
+    return render_template('l.html', prediction_text='your GAD score is $ {}'.format(output))
 
+@app.route('/predict_api',methods=['POST'])
+def predict_api():
+    '''
+    For direct API calls trought request
+    '''
+    data = request.get_json(force=True)
+    prediction = model.predict([np.array(list(data.values()))])
+
+    output = prediction[0]
+    return jsonify(output)
 
 if __name__ == "__main__":
     app.run(debug=True)
